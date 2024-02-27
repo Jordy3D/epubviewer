@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bane's EPUB Reader</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <header>
+        <a href=""><h1>Bane's EPUB Reader</h1></a>
+        <input type="file" name="file" id="file">
+    </header>
+
+    <main>
+        <div id="controls">
+            <button id="prev" disabled>Previous</button>
+            <button id="next" disabled>Next</button>
+        </div>
+        <div id="epub-container">
+            <div id="epub-toc"></div>
+            <div id="epub-content"></div>
+        </div>
+    </main>
+
+    <footer></footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>
