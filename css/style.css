@@ -1,9 +1,13 @@
-* {
+@import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap");
+
+body {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 
-    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+        sans-serif;
 }
 
 /* dark scrollbar */
@@ -34,7 +38,7 @@ body {
 }
 
 header {
-    padding: 5px;
+    padding: 5px !important;
     text-align: center;
     background-color: #222;
     color: white;
@@ -45,7 +49,7 @@ header {
     }
 
     h1 {
-        margin: 10px 0;
+        margin: 10px 0 !important;
         font-size: 2em;
         line-height: 1.5;
         text-indent: 0;
@@ -53,7 +57,7 @@ header {
 
     input {
         display: block;
-        margin: 0px auto;
+        margin: 0px auto !important;
         padding: 10px;
         border: none;
         border-radius: 5px;
@@ -63,16 +67,6 @@ header {
     }
 }
 
-/* if the content is loaded, slide the header up */
-header:has(+main #epub-content:not(:empty)) {
-    transform: translateY(-100%);
-    transition: transform 0.3s;
-}
-/* shift main up */
-main:has(#epub-content:not(:empty)) {
-    margin-top: -150px !important;
-    transition: margin-top 0.3s;
-}
 
 main {
     flex: 1;
@@ -84,6 +78,19 @@ main {
     max-width: 800px;
     padding: 30px;
     margin: 0 auto;
+}
+
+
+/* if the content is loaded, slide the header up */
+header:has(+ main #epub-content:not(:empty)) {
+    transform: translateY(-100%);
+    transition: transform 0.3s;
+}
+/* shift main up */
+main:has(#epub-content:not(:empty)) {
+    margin-top: -120px !important;
+    transition: margin-top 0.3s;
+    padding-top: 0;
 }
 
 #controls {
@@ -185,12 +192,29 @@ main {
 #epub-content {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
 
     color: white;
 
-    p {
+    p:not([class]) {
         margin: 5px 0;
         text-indent: 1em;
+
+        text-align: justify;
+    }
+    p.noindent {
+        text-indent: revert;
+    }
+
+    code {
+        font-family: "Fira Code", monospace;
+        font-optical-sizing: auto;
+        /* font-weight: <weight>; */
+        font-style: normal;
+    }
+
+    ul {
+        padding: revert !important;
     }
 
     a {
