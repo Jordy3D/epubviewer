@@ -40,11 +40,11 @@ class EPUB {
     }
 
     async getToc() {
-        let tocFile = null;
-        if (this.rootFolder === "")
-            tocFile = await this.zip.file("toc.ncx").async("string");
-        else
-            tocFile = await this.zip.file(this.rootFolder + "/toc.ncx").async("string");
+        let path = "toc.ncx"
+        if (this.rootFolder != "")
+            path = this.rootFolder + "/" + path;
+
+        let tocFile = await this.zip.file(path).async("string");
 
         let parser = new DOMParser();
         let xmlDoc = parser.parseFromString(tocFile, "text/xml");
@@ -61,14 +61,17 @@ class EPUB {
 
     async getTocContent() {
         let content = [];
+        if (this.toc.length === 0) return content;
+
         for (let i = 0; i < this.toc.length; i++) {
             let item = this.toc[i];
 
-            let html = null;
-            if (this.rootFolder === "")
-                html = await this.zip.file(item.content).async("string");
-            else
-                html = await this.zip.file(this.rootFolder + "/" + item.content).async("string");
+            let path = item.content;
+            if (this.rootFolder != "")
+                path = this.rootFolder + "/" + path;
+
+            path = path.split("#")[0];
+            let html = await this.zip.file(path).async("string");
 
             // save the file name as the key and the content as the value
             let name = item.content.split("/").pop();
@@ -82,11 +85,11 @@ class EPUB {
         // load content from content.opf's manifest
         // only the html/xhtml files are needed
         let content = [];
-        let contentFile = null;
-        if (this.rootFolder === "")
-            contentFile = await this.zip.file("content.opf").async("string");
-        else
-            contentFile = await this.zip.file(this.rootFolder + "/content.opf").async("string");
+        let path = "content.opf";
+        if (this.rootFolder != "")
+            path = this.rootFolder + "/" + path;
+
+        let contentFile = await this.zip.file(path).async("string");
 
         let parser = new DOMParser();
         let xmlDoc = parser.parseFromString(contentFile, "text/xml");
@@ -256,7 +259,8 @@ function markActiveLink() {
     let content = epub.mergedContent[chapter].content;
     let activeIndex = epub.tocContent.findIndex(x => x.content === content);
 
-    links[activeIndex].classList.add("active");
+    if (activeIndex !== -1) // if the active index is found, mark the link as active
+        links[activeIndex].classList.add("active");
 }
 
 function reset() {
@@ -278,27 +282,37 @@ document.getElementById("file").addEventListener("change", async function (event
     let file = event.target.files[0];
     epub = new EPUB(file);
     await epub.load().then(() => {
-        // print the object to the console
-        console.log(epub);
+        console.log(epub);                  // print the epub object to the console
 
-        // display the table of contents
-        displayToc();
-
-        // display the first chapter
-        loadChapter(0, true);
-
-        // enable the next and previous buttons
-        enableButtons();
-    }).catch((error) => {
+        displayToc();                       // display the table of contents
+        loadChapter(0, true);               // load the first chapter
+        enableButtons();                    // enable the next and previous buttons
+    }).catch((e) => {
         // set the error message in the content div
-        document.getElementById("epub-content").innerHTML = error;
+
+        // if the file extension is not .epub, display an error message
+        let error = "Invalid file type. Please upload an epub file.";
+        if (file.name.split(".").pop() === "epub")
+            error = "An error occurred while trying to load the epub file.<br>It may be structured differently than expected.";
+
+        let content = document.getElementById("epub-content");
+        let errorContent = `<h1>Error</h1><p>${error}</p>`;
+        content.innerHTML = errorContent;
+
+        console.error(e);
     });
 });
 
 function enableButtons() {
-    console.log("enabling buttons");
     document.getElementById("prev").disabled = false;
     document.getElementById("next").disabled = false;
+}
+
+function scrollToTop() {
+    window.scrollTo(0, 0);
+}
+function scrollToBottom() {
+    window.scrollTo(0, document.documentElement.scrollHeight);
 }
 
 // when the user clicks on a link in the table of contents, display the chapter
@@ -316,6 +330,9 @@ document.getElementById("epub-toc").addEventListener("click", function (event) {
 
         chapter = index;
         loadChapter(index);
+
+        // scroll to the top
+        scrollToTop();
     }
 });
 
@@ -324,6 +341,7 @@ document.getElementById("next").addEventListener("click", function (event) {
     if (chapter < epub.mergedContent.length - 1) {
         chapter++;
         loadChapter(chapter);
+        scrollToTop();
     }
 });
 
@@ -332,57 +350,50 @@ document.getElementById("prev").addEventListener("click", function (event) {
     if (chapter > 0) {
         chapter--;
         loadChapter(chapter);
+        scrollToTop();
     }
 });
 
 // on mouse scroll
 document.addEventListener("wheel", function (event) {
-    // 1 is up, -1 is down
-    // get the direction the user is scrolling
-    var scrollDirection = 0;
-    if (event.deltaY < 0)
-        scrollDirection = 1;
-    else
-        scrollDirection = -1;
+    // if there is no epub file, do nothing
+    if (epub === null)
+        return;
 
-    // if there is no scroll bar 
-    if (document.documentElement.scrollHeight === document.documentElement.clientHeight) {
-        // if the user is scrolling up
+    // 1 is up, -1 is down
+    var scrollDirection = event.deltaY < 0 ? 1 : -1;
+
+    let scrollHeight = document.documentElement.scrollHeight;
+    let clientHeight = document.documentElement.clientHeight;
+    var hasScrollBar = scrollHeight !== clientHeight;
+
+    if (!hasScrollBar) {        // if there is no scroll bar, just change the chapter
         if (scrollDirection === 1 && chapter > 0) {
             chapter--;
             loadChapter(chapter);
-            window.scrollTo(0, document.documentElement.scrollHeight);
+            scrollToBottom();
         }
-        // if the user is scrolling down
         else if (scrollDirection === -1 && chapter < epub.mergedContent.length - 1) {
             chapter++;
             loadChapter(chapter);
-            window.scrollTo(0, 0);
+            scrollToTop();
         }
     }
-    else {
-        let scrollHeight = document.documentElement.scrollHeight;
-        let clientHeight = document.documentElement.clientHeight;
+    else {                      // if there is a scroll bar, check if the user is at the top or bottom 
         let scrollY = window.scrollY;
 
         let bottom = (scrollHeight - clientHeight - scrollY);
         let atBottom = bottom <= 1;
 
-        // if the user is scrolling up
         if (scrollDirection === 1 && window.scrollY === 0 && chapter > 0) {
             chapter--;
             loadChapter(chapter);
-
-            // scroll to the bottom
-            window.scrollTo(0, document.documentElement.scrollHeight);
+            scrollToBottom();
         }
-        // if the user is scrolling down
         else if (scrollDirection === -1 && atBottom && chapter < epub.mergedContent.length - 1) {
             chapter++;
             loadChapter(chapter);
-
-            // scroll to the top
-            window.scrollTo(0, 0);
+            scrollToTop();
         }
     }
 });
