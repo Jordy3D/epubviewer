@@ -253,9 +253,8 @@ function markActiveLink() {
         links[i].classList.remove("active");
 
     // get the active index
-    let name = epub.mergedContent[chapter].name;
-    let activeIndex = epub.tocContent.findIndex(x => x.name === name);
-    console.log(`Active chapter: ${name} at index: ${activeIndex}`);
+    let content = epub.mergedContent[chapter].content;
+    let activeIndex = epub.tocContent.findIndex(x => x.content === content);
 
     links[activeIndex].classList.add("active");
 }
@@ -315,14 +314,14 @@ document.getElementById("epub-toc").addEventListener("click", function (event) {
         // find the index of the clicked link in the mergedContent array by the name
         let index = epub.mergedContent.findIndex(x => x.name === epub.toc[tocIndex].content.split("/").pop().split(".")[0]);
 
-        loadChapter(index);
         chapter = index;
+        loadChapter(index);
     }
 });
 
 // when the user clicks on the next chapter button, display the next chapter
 document.getElementById("next").addEventListener("click", function (event) {
-    if (chapter < epub.tocContent.length - 1) {
+    if (chapter < epub.mergedContent.length - 1) {
         chapter++;
         loadChapter(chapter);
     }
