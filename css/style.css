@@ -43,6 +43,8 @@ header {
     background-color: #222;
     color: white;
 
+    transition: transform 0.3s;
+
     a {
         text-decoration: none;
         color: white;
@@ -75,21 +77,25 @@ main {
     align-items: center;
     justify-content: center;
 
-    max-width: 800px;
+    box-sizing: border-box;
+
+    max-width: min(800px, 100%);
+    width: 100%;
     padding: 30px;
+    padding-top: 0;
     margin: 0 auto;
+
+    transition: margin-top 0.3s;
 }
 
 
 /* if the content is loaded, slide the header up */
 header:has(+ main #epub-content:not(:empty)) {
     transform: translateY(-100%);
-    transition: transform 0.3s;
 }
 /* shift main up */
 main:has(#epub-content:not(:empty)) {
     margin-top: -120px !important;
-    transition: margin-top 0.3s;
     padding-top: 0;
 }
 
@@ -101,12 +107,14 @@ main:has(#epub-content:not(:empty)) {
     justify-content: center;
     width: 100%;
     margin: 10px 0;
+
+    gap: 10px;
 }
 
 #controls button {
     padding: 10px;
     width: 100px;
-    margin: 0 5px;
+    /* margin: 0 5px; */
     border: none;
     border-radius: 5px;
     background-color: #222;
@@ -123,6 +131,11 @@ main:has(#epub-content:not(:empty)) {
         opacity: 0.5;
         cursor: not-allowed;
     }
+}
+
+
+#clear {
+    margin-right: auto !important;
 }
 
 /* move toc into sidebar that is only revealed on hover*/

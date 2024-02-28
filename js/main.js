@@ -121,7 +121,7 @@ class EPUB {
         // make a copy of each array
         let tempTocContent = this.tocContent.slice();
         let tempContent = this.content.slice();
-       
+
         // go through the content array and add in the content from the content array between the tocContent where the .name matches
         // ie, tocContent has chapter1, chapter2, chapter3, and content has chapter1, insert1, chapter1_1, chapter2, insert2, chapter2_1, chapter3
         // the mergedContent array should be chapter1, insert1, chapter1_1, chapter2, insert2, chapter2_1, chapter3
@@ -290,6 +290,9 @@ document.getElementById("file").addEventListener("change", async function (event
 
         // enable the next and previous buttons
         enableButtons();
+    }).catch((error) => {
+        // set the error message in the content div
+        document.getElementById("epub-content").innerHTML = error;
     });
 });
 
@@ -344,25 +347,21 @@ document.addEventListener("wheel", function (event) {
         scrollDirection = -1;
 
     // if there is no scroll bar 
-    if (document.documentElement.scrollHeight === document.documentElement.clientHeight)
-    {
+    if (document.documentElement.scrollHeight === document.documentElement.clientHeight) {
         // if the user is scrolling up
-        if (scrollDirection === 1 && chapter > 0)
-        {
+        if (scrollDirection === 1 && chapter > 0) {
             chapter--;
             loadChapter(chapter);
             window.scrollTo(0, document.documentElement.scrollHeight);
         }
         // if the user is scrolling down
-        else if (scrollDirection === -1 && chapter < epub.mergedContent.length - 1)
-        {
+        else if (scrollDirection === -1 && chapter < epub.mergedContent.length - 1) {
             chapter++;
             loadChapter(chapter);
             window.scrollTo(0, 0);
         }
     }
-    else
-    {
+    else {
         let scrollHeight = document.documentElement.scrollHeight;
         let clientHeight = document.documentElement.clientHeight;
         let scrollY = window.scrollY;
@@ -371,8 +370,7 @@ document.addEventListener("wheel", function (event) {
         let atBottom = bottom <= 1;
 
         // if the user is scrolling up
-        if (scrollDirection === 1 && window.scrollY === 0 && chapter > 0)
-        {
+        if (scrollDirection === 1 && window.scrollY === 0 && chapter > 0) {
             chapter--;
             loadChapter(chapter);
 
@@ -380,8 +378,7 @@ document.addEventListener("wheel", function (event) {
             window.scrollTo(0, document.documentElement.scrollHeight);
         }
         // if the user is scrolling down
-        else if (scrollDirection === -1 && atBottom && chapter < epub.mergedContent.length - 1)
-        {
+        else if (scrollDirection === -1 && atBottom && chapter < epub.mergedContent.length - 1) {
             chapter++;
             loadChapter(chapter);
 
@@ -389,4 +386,10 @@ document.addEventListener("wheel", function (event) {
             window.scrollTo(0, 0);
         }
     }
+});
+
+// clear the file input when the user clicks on the clear button
+document.getElementById("clear").addEventListener("click", function (event) {
+    document.getElementById("file").value = "";
+    reset();
 });
