@@ -251,7 +251,13 @@ function markActiveLink() {
     let links = document.getElementById("epub-toc").getElementsByTagName("a");
     for (let i = 0; i < links.length; i++)
         links[i].classList.remove("active");
-    links[chapter].classList.add("active");
+
+    // get the active index
+    let name = epub.mergedContent[chapter].name;
+    let activeIndex = epub.tocContent.findIndex(x => x.name === name);
+    console.log(`Active chapter: ${name} at index: ${activeIndex}`);
+
+    links[activeIndex].classList.add("active");
 }
 
 function reset() {
@@ -345,12 +351,14 @@ document.addEventListener("wheel", function (event) {
         {
             chapter--;
             loadChapter(chapter);
+            window.scrollTo(0, document.documentElement.scrollHeight);
         }
         // if the user is scrolling down
         else if (scrollDirection === -1 && chapter < epub.mergedContent.length - 1)
         {
             chapter++;
             loadChapter(chapter);
+            window.scrollTo(0, 0);
         }
     }
     else
