@@ -1,4 +1,7 @@
 
+
+
+
 // an epub object class to handle the epub file
 class EPUB {
     constructor(file) {
@@ -14,7 +17,7 @@ class EPUB {
     }
 
     async load() {
-        const potentialRootFolders = ["OEBPS", "OPS", "EPUB", ""];
+        const potentialRootFolders = ["OEBPS", "OPS", "EPUB", "ops", ""];
 
         // unzip the epub file, only the content in the OEBPS folder is needed
         this.zip = await this.zip.loadAsync(this.file);
@@ -86,8 +89,17 @@ class EPUB {
         // only the html/xhtml files are needed
         let content = [];
         let path = "content.opf";
+
         if (this.rootFolder != "")
             path = this.rootFolder + "/" + path;
+
+        // if there is an opf file that is not called content.opf, use that
+        let opfFiles = this.zip.filter(function (relativePath, file) {
+            return relativePath.endsWith(".opf");
+        });
+        if (opfFiles.length > 0) {
+            path = opfFiles[0].name;
+        }
 
         let contentFile = await this.zip.file(path).async("string");
 
@@ -198,12 +210,15 @@ class EPUB {
     }
 }
 
+// global variables
+const epubContent = document.getElementById("epub-content");
+
 var epub = null;
 var chapter = 0;
 
 function displayToc() {
     let toc = document.getElementById("epub-toc");
-    let content = document.getElementById("epub-content");
+    let content = epubContent;
     for (let i = 0; i < epub.toc.length; i++) {
         let item = epub.toc[i];
         let link = document.createElement("a");
@@ -240,12 +255,34 @@ function replaceContent(content) {
         return match.replace(href, styleSrc);
     });
 
+
+    // go through every a on the page and add an onclick event go to that chapter if the href is a chapter
+    let aPattern = /<a[^>]*>/g;
+    content = content.replace(aPattern, function (match) {
+        // if the href starts with http, it's an external link, so don't do anything
+        if (match.includes("http")) return match;
+
+        let href = match.match(/href="([^"]*)"/)[1];
+        let chapter = epub.mergedContent.findIndex(x => x.name === href.split("/").pop().split(".")[0]);
+        if (chapter !== -1) {
+            // remove the href and add the onlick event
+            match = match.replace(/href="([^"]*)"/, "");
+            match = match.replace(">", `href onclick="loadChapter(${chapter}, true); return false;">`);
+        }
+        return match;
+    });
+
     return content;
 }
 
-function loadChapter(index) {
+function loadChapter(index, tocPage = false) {
     let content = replaceContent(epub.mergedContent[index].content);
-    document.getElementById("epub-content").innerHTML = content;
+    epubContent.innerHTML = content;
+
+    if (tocPage) {
+        // set index
+        chapter = index;
+    }
 
     markActiveLink();
 }
@@ -265,7 +302,7 @@ function markActiveLink() {
 
 function reset() {
     document.getElementById("epub-toc").innerHTML = "";
-    document.getElementById("epub-content").innerHTML = "";
+    epubContent.innerHTML = "";
 
     // reset the chapter counter
     chapter = 0;
@@ -295,7 +332,7 @@ document.getElementById("file").addEventListener("change", async function (event
         if (file.name.split(".").pop() === "epub")
             error = "An error occurred while trying to load the epub file.<br>It may be structured differently than expected.";
 
-        let content = document.getElementById("epub-content");
+        let content = epubContent;
         let errorContent = `<h1>Error</h1><p>${error}</p>`;
         content.innerHTML = errorContent;
 
@@ -355,7 +392,7 @@ document.getElementById("prev").addEventListener("click", function (event) {
 });
 
 // on mouse scroll
-document.addEventListener("wheel", function (event) {
+epubContent.addEventListener("wheel", function (event) {
     // if there is no epub file, do nothing
     if (epub === null)
         return;

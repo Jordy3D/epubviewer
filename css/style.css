@@ -1,18 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap");
 
-
-:root
-{
-    --paragraphIndent: 1em;
-    --paragraphSpacing: 5px;
-    --paragraphJustify: justify;
-    --paragraphColor: white;
-    --paragraphFont: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-    --paragraphFontSize: 1em;
-    --paragraphLineHeight: 1.25;
-}
-
-
 body {
     margin: 0;
     padding: 0;
@@ -45,9 +32,9 @@ body {
     /* align-items: center; */
     /* justify-content: center; */
     height: 100vh;
-    background-color: #333;
+    background-color: var(--backgroundColour);
 
-    color: var(--paragraphColor);
+    color: var(--paragraphColour);
 }
 
 header {
@@ -82,7 +69,6 @@ header {
     }
 }
 
-
 main {
     flex: 1;
     display: flex;
@@ -100,7 +86,6 @@ main {
 
     transition: margin-top 0.3s;
 }
-
 
 /* if the content is loaded, slide the header up */
 header:has(+ main #epub-content:not(:empty)) {
@@ -146,7 +131,6 @@ main:has(#epub-content:not(:empty)) {
     }
 }
 
-
 #clear {
     margin-right: auto !important;
 }
@@ -156,6 +140,8 @@ main:has(#epub-content:not(:empty)) {
     display: flex;
     flex-direction: row;
     height: 100%;
+
+    width: 100%;
 }
 
 #epub-toc {
@@ -220,7 +206,7 @@ main:has(#epub-content:not(:empty)) {
     overflow-y: auto;
     overflow-x: hidden;
 
-    color: var(--paragraphColor);
+    color: var(--paragraphColour);
     font-size: var(--paragraphFontSize);
     line-height: var(--paragraphLineHeight);
 
@@ -250,13 +236,22 @@ main:has(#epub-content:not(:empty)) {
         padding: revert !important;
     }
 
-    a {
+    a:not([href=""]) {
         color: white;
         text-decoration: underline;
     }
 
-    p[class*="TOC"] a {
+    a:has(:not([onclick=""])) {
+        color: white;
         text-decoration: none;
+    }
+
+    a:visited {
+        color: white;
+    }
+
+    :is([class*="TOC"], [class*="toc"]) a {
+        text-decoration: none !important;
     }
 
     :is(h1, h2, h3, h4, h5, h6) a {
@@ -274,4 +269,137 @@ main:has(#epub-content:not(:empty)) {
     margin: 0 auto;
     max-width: 100%;
     height: auto;
+}
+
+/* settings */
+
+#settings {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    padding: 10px;
+
+    width: 250px;
+
+    background-color: #444;
+    color: white;
+
+    transform: translateX(calc(100% - 10px));
+    transition: transform 0.3s;
+
+    &:hover {
+        transform: translateX(0);
+    }
+
+    h2,
+    h3 {
+        margin: 0;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    h3 {
+        border-top: 1px solid #666;
+        padding-top: 10px;
+    }
+
+    .options {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .input-group {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+
+        width: 100%;
+    }
+
+    .input-group label:first-child {
+        width: 100px;
+        flex: 0 0 auto;
+    }
+
+    .input-group label + *:not(label) {
+        flex: 1;
+        width: 100%;
+    }
+
+    input[type="color"] {
+        -webkit-appearance: none;
+        border: none;
+        width: 32px;
+        height: 32px;
+    }
+    input[type="color"]::-webkit-color-swatch-wrapper {
+        padding: 0;
+    }
+    input[type="color"]::-webkit-color-swatch {
+        border: none;
+    }
+
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        /* height: 34px; */
+    }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: 0.4s;
+        transition: 0.4s;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: calc(100% - 4px);
+        width: auto;
+        aspect-ratio: 1/1;
+        left: 4px;
+        bottom: 2px;
+        background-color: white;
+        -webkit-transition: 0.4s;
+        transition: 0.4s;
+    }
+
+    input:checked + .slider {
+        background-color: #2196f3;
+    }
+
+    input:focus + .slider {
+        box-shadow: 0 0 1px #2196f3;
+    }
+
+    input:checked + .slider:before {
+        -webkit-transform: translateX(26px);
+        -ms-transform: translateX(26px);
+        transform: translateX(26px);
+    }
+
+    .slider.round {
+        border-radius: 34px;
+    }
+
+    .slider.round:before {
+        border-radius: 50%;
+    }
 }
