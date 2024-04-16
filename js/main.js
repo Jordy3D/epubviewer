@@ -262,7 +262,11 @@ function replaceContent(content) {
         // if the href starts with http, it's an external link, so don't do anything
         if (match.includes("http")) return match;
 
-        let href = match.match(/href="([^"]*)"/)[1];
+        let href = match.match(/href="([^"]*)"/);
+        // if there is no href, return the match
+        if (href === null) return match;
+
+        href = href[1];
         let chapter = epub.mergedContent.findIndex(x => x.name === href.split("/").pop().split(".")[0]);
         if (chapter !== -1) {
             // remove the href and add the onlick event
